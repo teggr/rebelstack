@@ -24,3 +24,27 @@ The project is responsbile for providing tooling to tie them together in the pub
 - Documentation: [/docs/documentation.html](/docs/documentation.html)
 - JBang project initializer: [/scripts/rebelstack-init.java](/scripts/rebelstack-init.java)
 - JBang catalog: [/jbang-catalog.json](/jbang-catalog.json)
+
+## Install the JBang Catalog
+
+Add the Rebelstack catalog to your local JBang configuration:
+
+```bash
+jbang catalog add rebelstack https://raw.githubusercontent.com/teggr/rebelstack/main/jbang-catalog.json
+```
+
+You can verify it was added:
+
+```bash
+jbang catalog list
+```
+
+## Run the Project Init via JBang
+
+After the catalog is installed, run the initializer alias:
+
+```bash
+jbang rebelstack-init@rebelstack
+```
+
+This executes [`scripts/rebelstack-init.java`](scripts/rebelstack-init.java) from the installed catalog.
