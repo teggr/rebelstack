@@ -1,0 +1,8 @@
+{
+  "aliases": {
+    "rebelstack-init": {
+      "script-ref": "./scripts/rebelstack-init.java",
+      "description": "Initialize a Rebelstack Maven project with Spring Boot, j2html, j2css, htmx and deploy4j"
+    }
+  }
+}
