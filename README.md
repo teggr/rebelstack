@@ -1,6 +1,23 @@
 # rebelstack
 
-Rebelstack is an alternative development stack for Java developers.
+<https://github.com/teggr/rebelstack>
+
+Will be publishing to <https://rebelstack.sh>
+
+Libraries and frameworks:
+
+- Java 21+
+- Spring Boot 4.x
+- j2html - <https://github.com/tipsy/j2html>
+  - j2html-extensions - <https://github.com/teggr/j2html-extensions>
+- j2css - <https://github.com/teggr/j2css>
+- deploy4j - <https://github.com/teggr/deploy4j>
+- htmx - <https://htmx.org/>
+  - spring boot htmx - <https://github.com/wimdeblauwe/htmx-spring-boot>
+
+The rebelstack project is really the published vision of how all these frameworks can be brought together in order to build and publish Java applications with rapid speed assisted by ai.
+
+The project is responsbile for providing tooling to tie them together in the published vision.
 
 - Website source: [/docs](/docs)
 - Homepage: [/docs/index.html](/docs/index.html)
