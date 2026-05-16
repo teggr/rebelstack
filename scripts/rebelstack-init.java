@@ -49,25 +49,51 @@ class rebelstack_init {
         }
 
         if (requested.contains("spring-web")) {
-            Dependency dep = new Dependency("org.springframework.boot", "spring-boot-starter-web", null);
+            Dependency dep = new Dependency("org.springframework.boot", "spring-boot-starter-webmvc", null, null);
             if (!hasDependency(pom, dep.groupId(), dep.artifactId())) {
                 pom = ensureDependenciesSection(pom);
                 pom = addDependency(pom, dep);
-                added.add("dependency: org.springframework.boot:spring-boot-starter-web");
+                added.add("dependency: org.springframework.boot:spring-boot-starter-webmvc");
             }
         }
 
         if (requested.contains("j2html")) {
-            Dependency dep = new Dependency("com.j2html", "j2html", "1.6.0");
-            if (!hasDependency(pom, dep.groupId(), dep.artifactId())) {
+            ManagedDependency bom = new ManagedDependency(
+                    "dev.rebelcraft",
+                    "j2html-extensions-bom",
+                    "0.0.3",
+                    "pom",
+                    "import");
+            if (!hasManagedDependency(pom, bom.groupId(), bom.artifactId())) {
+                pom = ensureDependencyManagementSection(pom);
+                pom = addManagedDependency(pom, bom);
+                added.add("dependencyManagement: dev.rebelcraft:j2html-extensions-bom:0.0.3 (import)");
+            }
+
+            Dependency starter = new Dependency("dev.rebelcraft", "j2html-extensions-spring-boot-starter", null, null);
+            if (!hasDependency(pom, starter.groupId(), starter.artifactId())) {
                 pom = ensureDependenciesSection(pom);
-                pom = addDependency(pom, dep);
-                added.add("dependency: com.j2html:j2html:1.6.0");
+                pom = addDependency(pom, starter);
+                added.add("dependency: dev.rebelcraft:j2html-extensions-spring-boot-starter");
+            }
+
+            Dependency bootstrap = new Dependency("dev.rebelcraft", "bootstrap-j2html-extension", null, null);
+            if (!hasDependency(pom, bootstrap.groupId(), bootstrap.artifactId())) {
+                pom = ensureDependenciesSection(pom);
+                pom = addDependency(pom, bootstrap);
+                added.add("dependency: dev.rebelcraft:bootstrap-j2html-extension");
+            }
+
+            Dependency htmx = new Dependency("dev.rebelcraft", "htmx-j2html-extension", null, null);
+            if (!hasDependency(pom, htmx.groupId(), htmx.artifactId())) {
+                pom = ensureDependenciesSection(pom);
+                pom = addDependency(pom, htmx);
+                added.add("dependency: dev.rebelcraft:htmx-j2html-extension");
             }
         }
 
         if (requested.contains("j2css")) {
-            Dependency dep = new Dependency("io.github.teggr", "j2css", "0.1.0-SNAPSHOT");
+            Dependency dep = new Dependency("io.github.teggr", "j2css", "0.1.0-SNAPSHOT", null);
             if (!hasDependency(pom, dep.groupId(), dep.artifactId())) {
                 pom = ensureDependenciesSection(pom);
                 pom = addDependency(pom, dep);
@@ -76,11 +102,11 @@ class rebelstack_init {
         }
 
         if (requested.contains("htmx")) {
-            Dependency dep = new Dependency("org.webjars.npm", "htmx.org", "2.0.4");
+            Dependency dep = new Dependency("io.github.wimdeblauwe", "htmx-spring-boot", "5.1.0", "compile");
             if (!hasDependency(pom, dep.groupId(), dep.artifactId())) {
                 pom = ensureDependenciesSection(pom);
                 pom = addDependency(pom, dep);
-                added.add("dependency: org.webjars.npm:htmx.org:2.0.4");
+                added.add("dependency: io.github.wimdeblauwe:htmx-spring-boot:5.1.0 (compile)");
             }
         }
 
@@ -114,10 +140,10 @@ class rebelstack_init {
         System.out.println("\nRuns in the current Maven project and updates pom.xml in place.");
         System.out.println("If no components are provided, installs all Rebelstack components.");
         System.out.println("\nAvailable components:");
-        System.out.println("  spring-web  -> org.springframework.boot:spring-boot-starter-web");
-        System.out.println("  j2html      -> com.j2html:j2html:1.6.0");
+        System.out.println("  spring-web  -> org.springframework.boot:spring-boot-starter-webmvc");
+        System.out.println("  j2html      -> dev.rebelcraft j2html extensions BOM + starter dependencies");
         System.out.println("  j2css       -> io.github.teggr:j2css:0.1.0-SNAPSHOT");
-        System.out.println("  htmx        -> org.webjars.npm:htmx.org:2.0.4");
+        System.out.println("  htmx        -> io.github.wimdeblauwe:htmx-spring-boot:5.1.0 (compile)");
         System.out.println("  deploy4j    -> com.github.teggr.deploy4j:deploy4j-maven-plugin:0.0.1");
         System.out.println("  all         -> install everything above");
     }
@@ -155,6 +181,16 @@ class rebelstack_init {
 
     private static boolean hasPlugin(String pom, String groupId, String artifactId) {
         return hasCoordinate(pom, groupId, artifactId);
+    }
+
+    private static boolean hasManagedDependency(String pom, String groupId, String artifactId) {
+        int dmStart = pom.indexOf("<dependencyManagement>");
+        int dmEnd = pom.indexOf("</dependencyManagement>");
+        if (dmStart < 0 || dmEnd < 0 || dmEnd <= dmStart) {
+            return false;
+        }
+        String dependencyManagementXml = pom.substring(dmStart, dmEnd);
+        return hasCoordinate(dependencyManagementXml, groupId, artifactId);
     }
 
     private static boolean hasCoordinate(String xml, String groupId, String artifactId) {
@@ -196,6 +232,21 @@ class rebelstack_init {
         return insertBeforePreferred(pom, section, "<build>", "</project>");
     }
 
+    private static String ensureDependencyManagementSection(String pom) {
+        if (pom.contains("<dependencyManagement>")) {
+            return pom;
+        }
+
+        String section = """
+                    <dependencyManagement>
+                        <dependencies>
+                        </dependencies>
+                    </dependencyManagement>
+
+                """;
+        return insertBeforePreferred(pom, section, "<dependencies>", "<build>", "</project>");
+    }
+
     private static String ensureBuildPluginsSection(String pom) {
         if (pom.contains("<plugins>")) {
             return pom;
@@ -231,13 +282,36 @@ class rebelstack_init {
 
     private static String addDependency(String pom, Dependency dep) {
         String versionLine = dep.version() == null ? "" : "\n            <version>" + dep.version() + "</version>";
+        String scopeLine = dep.scope() == null ? "" : "\n            <scope>" + dep.scope() + "</scope>";
         String dependency = """
                         <dependency>
                             <groupId>%s</groupId>
-                            <artifactId>%s</artifactId>%s
+                            <artifactId>%s</artifactId>%s%s
                         </dependency>
-                """.formatted(dep.groupId(), dep.artifactId(), versionLine);
+                """.formatted(dep.groupId(), dep.artifactId(), versionLine, scopeLine);
         return insertBefore(pom, "</dependencies>", dependency);
+    }
+
+    private static String addManagedDependency(String pom, ManagedDependency dep) {
+        String dependency = """
+                            <dependency>
+                                <groupId>%s</groupId>
+                                <artifactId>%s</artifactId>
+                                <version>%s</version>
+                                <type>%s</type>
+                                <scope>%s</scope>
+                            </dependency>
+                """.formatted(dep.groupId(), dep.artifactId(), dep.version(), dep.type(), dep.scope());
+
+        int dmStart = pom.indexOf("<dependencyManagement>");
+        if (dmStart < 0) {
+            return pom;
+        }
+        int depsEnd = pom.indexOf("</dependencies>", dmStart);
+        if (depsEnd < 0) {
+            return pom;
+        }
+        return pom.substring(0, depsEnd) + dependency + pom.substring(depsEnd);
     }
 
     private static String addPlugin(String pom, Plugin plugin) {
@@ -269,7 +343,10 @@ class rebelstack_init {
         return xml.substring(0, index) + content + xml.substring(index);
     }
 
-    private record Dependency(String groupId, String artifactId, String version) {
+    private record Dependency(String groupId, String artifactId, String version, String scope) {
+    }
+
+    private record ManagedDependency(String groupId, String artifactId, String version, String type, String scope) {
     }
 
     private record Plugin(String groupId, String artifactId, String version) {

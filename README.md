@@ -30,7 +30,7 @@ The project is responsbile for providing tooling to tie them together in the pub
 Add the Rebelstack catalog to your local JBang configuration:
 
 ```bash
-jbang catalog add rebelstack https://raw.githubusercontent.com/teggr/rebelstack/main/jbang-catalog.json
+jbang catalog add --name rebelstack https://raw.githubusercontent.com/teggr/rebelstack/main/jbang-catalog.json
 ```
 
 You can verify it was added:
